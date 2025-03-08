@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Video to WebpGif Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .titlebar {
+      -webkit-app-region: drag;
+    }
+    .titlebar button {
+      -webkit-app-region: no-drag;
+    }
+    .drop-zone {
+      border: 2px dashed #4F46E5;
+      transition: all 0.3s ease;
+    }
+    .drop-zone.drag-over {
+      border-color: #6366F1;
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+    /* カスタムスライダースタイル */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #4F46E5;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+    }
+    .preset-card {
+      transition: all 0.2s ease;
+    }
+    .preset-card:hover {
+      transform: translateY(-2px);
+    }
+    .preset-card.selected {
+      border-color: #4F46E5;
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Title Bar -->
+  <div class="titlebar flex justify-between items-center bg-white border-b border-gray-200 px-4 py-2">
+    <div class="text-gray-700 font-medium">Video to WebpGif Converter</div>
+    <div class="flex space-x-2">
+      <button onclick="minimizeWindow()" class="hover:bg-gray-100 p-1 rounded">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+        </svg>
+      </button>
+      <button onclick="maximizeWindow()" class="hover:bg-gray-100 p-1 rounded">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/>
+        </svg>
+      </button>
+      <button onclick="closeWindow()" class="hover:bg-red-100 hover:text-red-600 p-1 rounded">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-6">
+    <!-- Drop Zone -->
+    <div id="dropZone" class="drop-zone h-64 rounded-lg flex flex-col items-center justify-center mb-6">
+      <svg class="w-16 h-16 text-indigo-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+      </svg>
+      <p class="text-lg text-gray-600">ドラッグ＆ドロップで動画ファイルを変換</p>
+      <p class="text-sm text-gray-500 mt-2">対応フォーマット: MP4, MOV, AVI, MKV, GIF</p>
+    </div>
+
+    <!-- Settings Container -->
+    <div class="bg-white rounded-lg shadow">
+      <!-- Format Selection -->
+      <div class="p-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-medium text-gray-800">出力フォーマット</h2>
+          <div class="flex space-x-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="radio" name="format" value="webp" checked class="sr-only peer">
+              <div class="px-4 py-2 text-sm font-medium rounded-md peer-checked:bg-indigo-600 peer-checked:text-white bg-gray-100 text-gray-600">
+                WebP
+              </div>
+            </label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="radio" name="format" value="gif" class="sr-only peer">
+              <div class="px-4 py-2 text-sm font-medium rounded-md peer-checked:bg-indigo-600 peer-checked:text-white bg-gray-100 text-gray-600">
+                GIF
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="p-4 border-b border-gray-200">
+        <h3 class="text-sm font-medium text-gray-700 mb-3">プリセット</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="preset-card selected cursor-pointer p-3 rounded-lg border border-gray-200">
+            <div class="text-sm font-medium text-gray-800">Web最適化</div>
+            <div class="text-xs text-gray-500 mt-1">画質と容量のバランス</div>
+          </div>
+          <div class="preset-card cursor-pointer p-3 rounded-lg border border-gray-200">
+            <div class="text-sm font-medium text-gray-800">高画質</div>
+            <div class="text-xs text-gray-500 mt-1">大きいファイルサイズ</div>
+          </div>
+          <div class="preset-card cursor-pointer p-3 rounded-lg border border-gray-200">
+            <div class="text-sm font-medium text-gray-800">軽量</div>
+            <div class="text-xs text-gray-500 mt-1">ファイルサイズ優先</div>
+          </div>
+          <div class="preset-card cursor-pointer p-3 rounded-lg border border-gray-200">
+            <div class="text-sm font-medium text-gray-800">ステッカー</div>
+            <div class="text-xs text-gray-500 mt-1">メッセージング用</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Settings -->
+      <div class="p-4">
+        <button id="advancedSettingsToggle" class="flex items-center justify-between w-full">
+          <span class="text-sm font-medium text-gray-700">詳細設定</span>
+          <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        
+        <div id="advancedSettings" class="mt-4 space-y-4">
+          <!-- FPS Slider -->
+          <div>
+            <div class="flex justify-between mb-2">
+              <label class="text-sm font-medium text-gray-700">フレームレート</label>
+              <span class="text-sm text-gray-500" id="fpsValue">10 FPS</span>
+            </div>
+            <input type="range" id="fps" min="1" max="60" value="10" class="w-full">
+          </div>
+
+          <!-- Width Slider -->
+          <div>
+            <div class="flex justify-between mb-2">
+              <label class="text-sm font-medium text-gray-700">幅</label>
+              <span class="text-sm text-gray-500" id="widthValue">640 px</span>
+            </div>
+            <input type="range" id="width" min="100" max="1920" value="640" step="10" class="w-full">
+          </div>
+
+          <!-- Quality Slider (WebP only) -->
+          <div id="qualityContainer">
+            <div class="flex justify-between mb-2">
+              <label class="text-sm font-medium text-gray-700">品質</label>
+              <span class="text-sm text-gray-500" id="qualityValue">75%</span>
+            </div>
+            <input type="range" id="quality" min="0" max="100" value="75" class="w-full">
+          </div>
+
+          <!-- Loop Switch -->
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium text-gray-700">ループ再生</label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="loop" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div id="progressContainer" class="mt-6 hidden">
+      <div class="flex justify-between text-sm text-gray-600 mb-2">
+        <span>変換中...</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html> 
