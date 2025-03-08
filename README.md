@@ -29,8 +29,17 @@
 ### macOS
 Homebrewを使用してインストール:
 ```bash
+# Homebrewのインストール（まだの場合）
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# ffmpegのインストール
 brew install ffmpeg
+
+# インストール後、以下のコマンドでffmpegが利用可能か確認
+which ffmpeg
 ```
+
+注意: Apple Silicon Macの場合、Homebrewのインストール先が `/opt/homebrew` になります。Intel Macの場合は `/usr/local` です。アプリケーションは両方のパスに対応しています。
 
 ### Linux (Ubuntu/Debian)
 ```bash

@@ -41,10 +41,53 @@ let mainWindow;
 // ffmpegが利用可能かチェックする関数
 async function checkFfmpeg() {
   try {
+    // Macの場合は固定パスも確認
+    if (process.platform === "darwin") {
+      const macPaths = [
+        "/usr/local/bin/ffmpeg", // Homebrew (Intel Mac)
+        "/opt/homebrew/bin/ffmpeg", // Homebrew (Apple Silicon)
+      ];
+
+      for (const path of macPaths) {
+        try {
+          await fs.access(path);
+          return true;
+        } catch {
+          continue;
+        }
+      }
+    }
+
+    // 通常のPATHチェック
     await which("ffmpeg");
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+// ffmpegのパスを取得する関数
+async function getFfmpegPath() {
+  if (process.platform === "darwin") {
+    const macPaths = [
+      "/usr/local/bin/ffmpeg", // Homebrew (Intel Mac)
+      "/opt/homebrew/bin/ffmpeg", // Homebrew (Apple Silicon)
+    ];
+
+    for (const path of macPaths) {
+      try {
+        await fs.access(path);
+        return path;
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  try {
+    return await which("ffmpeg");
+  } catch (error) {
+    return null;
   }
 }
 
@@ -105,9 +148,14 @@ ipcMain.handle("get-media-info", async (event, filePath) => {
     throw new Error("FFmpeg is not available");
   }
 
+  const ffmpegPath = await getFfmpegPath();
+  if (!ffmpegPath) {
+    throw new Error("FFmpeg path not found");
+  }
+
   return new Promise((resolve, reject) => {
     exec(
-      `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}"`,
+      `"${ffmpegPath}" -v quiet -print_format json -show_format -show_streams "${filePath}"`,
       (error, stdout) => {
         if (error) {
           reject(error);
@@ -196,6 +244,11 @@ ipcMain.handle(
       throw new Error("FFmpeg is not available");
     }
 
+    const ffmpegPath = await getFfmpegPath();
+    if (!ffmpegPath) {
+      throw new Error("FFmpeg path not found");
+    }
+
     try {
       // 出力先を同じディレクトリに設定
       let outputPath = path.join(
@@ -210,14 +263,16 @@ ipcMain.handle(
         let command = "";
 
         if (outputFormat === "webp") {
-          command = `ffmpeg -i "${inputPath}" -vf "fps=${settings.fps},scale=${
-            settings.width
-          }:-1:flags=lanczos" -loop ${
+          command = `"${ffmpegPath}" -i "${inputPath}" -vf "fps=${
+            settings.fps
+          },scale=${settings.width}:-1:flags=lanczos" -loop ${
             settings.loop ? "0" : "1"
           } -lossless 0 -quality ${settings.quality} "${outputPath}"`;
         } else if (outputFormat === "gif") {
           // GIF用の最適化されたフィルターチェーン
-          command = `ffmpeg -i "${inputPath}" -vf "fps=${settings.fps},scale=${
+          command = `"${ffmpegPath}" -i "${inputPath}" -vf "fps=${
+            settings.fps
+          },scale=${
             settings.width
           }:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop ${
             settings.loop ? "0" : "1"
