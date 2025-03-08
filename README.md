@@ -42,7 +42,7 @@ sudo apt install ffmpeg
 
 ```bash
 # リポジトリのクローン
-git clone https://github.com/yourusername/video-to-webpgif-converter.git
+git clone https://github.com/Uhiyamind/video-to-webpgif-converter.git
 cd video-to-webpgif-converter
 
 # 依存関係のインストール
